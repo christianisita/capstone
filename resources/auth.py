@@ -1,3 +1,4 @@
+from flask_jwt_extended.utils import set_access_cookies
 from models.users import UserModel, RevokedTokenModel
 from flask_restful import Resource, reqparse
 import random, string
@@ -42,9 +43,9 @@ class UserRegistration(Resource):
         try :
             new_user.save_to_db()
             access_token = create_access_token(identity = data['username'])
-            print(str(access_token))
+            #print(str(access_token))
             refresh_token = create_refresh_token(identity = data['username'])
-            print(str(refresh_token))
+            #print(str(refresh_token))
             return {
                 "success": True,
                 "message": "User already created",
@@ -98,3 +99,12 @@ class UserLogin(Resource):
                 "success": False,
                 "message": "Invalid password"
             }, HTTPStatus.OK
+
+class RefreshToken(Resource):
+    @jwt_required(refresh=True)
+    def post(self):
+        identity = get_jwt_identity()
+        access_token = create_access_token(identity=identity)
+        return {
+            "access_token": access_token
+        }
