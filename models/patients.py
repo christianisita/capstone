@@ -18,6 +18,14 @@ class Patients(db.Model):
 
     children = relationship("Detection")
 
+    def save_to_db(self):
+        db.session.add(self)
+        db.session.commit()
+
+    @classmethod
+    def find_by_nik(cls, nik):
+        return cls.query.filter_by(nik = nik).first() 
+
 class Detection(db.Model):
     __tablename__ = 'detections'
     __table_args__ = {'extend_existing': True}
