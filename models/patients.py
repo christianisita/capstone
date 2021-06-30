@@ -11,7 +11,7 @@ class Patients(db.Model):
     created_at = db.Column(db.DateTime(), default=datetime.utcnow(), nullable=False)
     updated_at = db.Column(db.DateTime(), default=datetime.utcnow(), onupdate=datetime.utcnow(), nullable=False)
     name = db.Column(db.String(120), nullable=False)
-    nik = db.Column(db.String(20), unique=True, nullable=False)
+    patient_number = db.Column(db.String(20), unique=True, nullable=False)
     age = db.Column(db.String(3))
     date_of_birth = db.Column(db.String(30))
     address = db.Column(db.String(150))
@@ -23,8 +23,8 @@ class Patients(db.Model):
         db.session.commit()
 
     @classmethod
-    def find_by_nik(cls, nik):
-        return cls.query.filter_by(nik = nik).first() 
+    def find_by_patient_number(cls, patient_number):
+        return cls.query.filter_by(patient_number = patient_number).first() 
 
 class Detection(db.Model):
     __tablename__ = 'detections'

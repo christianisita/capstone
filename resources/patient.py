@@ -9,27 +9,27 @@ def id_generator():
     id = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
     return id
 
-create_patient_parser = reqparse()
+create_patient_parser = reqparse.RequestParser()
 create_patient_parser.add_argument('name', required=True, help="Name cannot be blank!")
-create_patient_parser.add_argument('nik', required=True, help="NIK cannot be blank!")
+create_patient_parser.add_argument('patient_number', required=True, help="Patient Number cannot be blank!")
 create_patient_parser.add_argument('age', required=True, help="Age cannot be blank")
 create_patient_parser.add_argument('date_of_birth')
 create_patient_parser.add_argument('address')
 
 class AddPatient(Resource):
 
-    @jwt_required
+    @jwt_required()
     def post(self):
         patient = create_patient_parser.parse_args()
-        if Patients.find_by_nik(patient['nik']):
+        if Patients.find_by_patient_number(patient['patient_number']):
             return {
                 "success": False,
-                "message": "NIK already exist"
+                "message": "Patient Number already exist"
             }, HTTPStatus.OK
         new_patient = Patients(
             id = id_generator(),
             name = patient['name'],
-            nik = patient['nik'],
+            patient_number = patient['patient_number'],
             age = patient['age'],
             date_of_birth = patient['date_of_birth'],
             address = patient['address']
@@ -37,16 +37,17 @@ class AddPatient(Resource):
     
         try:
             new_patient.save_to_db()
+            current_patient = Patients.find_by_patient_number(patient['patient_number'])
             return {
                 "success": True,
                 "message": "New patient data already created",
                 "data": {
-                    "id": patient['id'],
-                    "name": patient['name'],
-                    "nik": patient['nik'],
-                    "age": patient['age'],
-                    "date_of_birth": patient['date_of_birth'],
-                    "address": patient['address']
+                    "id": current_patient.id,
+                    "name": current_patient.name,
+                    "patient_number": current_patient.patient_number,
+                    "age": current_patient.age,
+                    "date_of_birth": current_patient.date_of_birth,
+                    "address": current_patient.address
                 }
             }, HTTPStatus.CREATED
         

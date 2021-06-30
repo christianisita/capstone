@@ -1,4 +1,5 @@
 from flask_jwt_extended.utils import set_access_cookies
+from models import users
 from models.users import UserModel, RevokedTokenModel
 from flask_restful import Resource, reqparse
 import random, string
@@ -46,16 +47,18 @@ class UserRegistration(Resource):
             #print(str(access_token))
             refresh_token = create_refresh_token(identity = data['username'])
             #print(str(refresh_token))
+            current_user = UserModel.find_by_username(data['username'])
             return {
                 "success": True,
                 "message": "User already created",
                 "data": {
                     "access_token": access_token,
                     "refresh_token": refresh_token,
-                    "name": data['name'],
-                    "email": data['email'],
-                    "username": data['username'],
-                    "role": data['role']
+                    "id": current_user.id,
+                    "name": current_user.name,
+                    "email": current_user.email,
+                    "username": current_user.username,
+                    "role": current_user.role
                 }
             }, HTTPStatus.CREATED
         except:
