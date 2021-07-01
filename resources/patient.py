@@ -57,3 +57,31 @@ class AddPatient(Resource):
                 "message": "Unexpected DB Error, fail to save data to database"
             }, HTTPStatus.INTERNAL_SERVER_ERROR
 
+class PatientData(Resource):
+    
+    @jwt_required()
+    def get(self):
+        try:
+            all_data = Patients.get_all_patient_data()
+            def to_dict(x):
+                return {
+                    "id": x.id,
+                    "name": x.name,
+                    "patient_number": x.patient_number,
+                    "age": x.patient_number,
+                    "date_of_birth": x.date_of_birth,
+                    "address": x.address
+                }
+            return {
+                "succes": True,
+                "message": "Success get all patient data",
+                "data": {
+                    "users": list(map(lambda x: to_dict(x), all_data))
+                }
+            }, HTTPStatus.OK
+        except:
+            return {
+                "success": False,
+                "message": "Error getting data"
+            }, HTTPStatus.INTERNAL_SERVER_ERROR
+

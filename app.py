@@ -29,6 +29,7 @@ api.add_resource(resources.default.DefaultEndpoint, '/')
 api.add_resource(resources.auth.UserRegistration, '/register')
 api.add_resource(resources.auth.UserLogin, '/login')
 api.add_resource(resources.patient.AddPatient, '/add_patient')
+api.add_resource(resources.patient.PatientData, '/patients_data')
 
 
 

@@ -24,7 +24,15 @@ class Patients(db.Model):
 
     @classmethod
     def find_by_patient_number(cls, patient_number):
-        return cls.query.filter_by(patient_number = patient_number).first() 
+        return cls.query.filter_by(patient_number = patient_number).first()
+    
+    @classmethod
+    def find_by_patient_id(cls, id):
+        return cls.query.filter_by(id=id).first()
+
+    @classmethod
+    def get_all_patient_data(cls):
+        return cls.query.all()
 
 class Detection(db.Model):
     __tablename__ = 'detections'
