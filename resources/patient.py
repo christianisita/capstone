@@ -73,10 +73,10 @@ class PatientData(Resource):
                     "address": x.address
                 }
             return {
-                "succes": True,
+                "success": True,
                 "message": "Success get all patient data",
                 "data": {
-                    "users": list(map(lambda x: to_dict(x), all_data))
+                    "patients": list(map(lambda x: to_dict(x), all_data))
                 }
             }, HTTPStatus.OK
         except:
