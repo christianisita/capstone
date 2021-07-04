@@ -28,15 +28,8 @@ class UserModel(db.Model):
         return cls.query.filter_by(email = email).first()
     
     @classmethod
-    def return_all(cls):
-        def to_json(x):
-            return {
-                'id': x.id,
-                'name': x.username,
-                'email': x.email,
-                'role': x.role
-            }
-        return {'users': list(map(lambda x: to_json(x), UserModel.query.all()))}
+    def get_all_user_data(cls):
+        return cls.query.all()
 
     @classmethod
     def delete_all(cls):
@@ -54,6 +47,7 @@ class UserModel(db.Model):
     @staticmethod
     def verify_hash(password, hash):
         return sha256.verify(password, hash)
+    
 
 class RevokedTokenModel(db.Model):
     __tablename__ = 'revoked_tokens'

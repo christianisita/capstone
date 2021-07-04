@@ -111,3 +111,29 @@ class RefreshToken(Resource):
         return {
             "access_token": access_token
         }
+
+class AllUser(Resource):
+    @jwt_required()
+    def get(self):
+        try: 
+            all_user = UserModel.get_all_user_data()
+            def to_dict(x):
+                return {
+                    'id': x.id,
+                    'name': x.username,
+                    'email': x.email,
+                    'role': x.role
+                }
+            return {
+                "success": True,
+                "message": "Success get all user data",
+                'users': list(map(lambda x: to_dict(x), all_user))
+            }, HTTPStatus.OK
+
+        except:
+            return {
+                "success": False,
+                "message": "Error getting users data"
+            }, HTTPStatus.INTERNAL_SERVER_ERROR
+
+
