@@ -1,6 +1,8 @@
+from flask.wrappers import Response
 from flask_jwt_extended.utils import set_access_cookies
 from models.patients import Patients, Detection
 from flask_restful import Resource, reqparse
+from flask import request
 import random, string
 from http import HTTPStatus
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, get_jwt_identity)
@@ -17,7 +19,6 @@ create_patient_parser.add_argument('date_of_birth')
 create_patient_parser.add_argument('address')
 
 class AddPatient(Resource):
-
     @jwt_required()
     def post(self):
         patient = create_patient_parser.parse_args()
@@ -58,30 +59,101 @@ class AddPatient(Resource):
             }, HTTPStatus.INTERNAL_SERVER_ERROR
 
 class PatientData(Resource):
-    
     @jwt_required()
-    def get(self):
-        try:
-            all_data = Patients.get_all_patient_data()
-            def to_dict(x):
+    def get(self, id=None):
+        if id==None:
+            try:
+                all_data = Patients.get_all_patient_data()
+                def to_dict(x):
+                    return {
+                        "id": x.id,
+                        "name": x.name,
+                        "patient_number": x.patient_number,
+                        "age": x.patient_number,
+                        "date_of_birth": x.date_of_birth,
+                        "address": x.address
+                    }
                 return {
-                    "id": x.id,
-                    "name": x.name,
-                    "patient_number": x.patient_number,
-                    "age": x.patient_number,
-                    "date_of_birth": x.date_of_birth,
-                    "address": x.address
-                }
+                    "success": True,
+                    "message": "Success get all patient data",
+                    "data": {
+                        "patients": list(map(lambda x: to_dict(x), all_data))
+                    }
+                }, HTTPStatus.OK
+            except:
+                return {
+                    "success": False,
+                    "message": "Error getting data"
+                }, HTTPStatus.INTERNAL_SERVER_ERROR
+        else:
+            try:
+                patient = Patients.find_by_patient_id(id)
+                return {
+                    "success": True,
+                    "message": "Success get patient data",
+                    "data": {
+                        "id": patient.id,
+                        "name": patient.name,
+                        "patient_number": patient.patient_number,
+                        "age": patient.age,
+                        "date_of_birth": patient.date_of_birth,
+                        "address": patient.address
+                    }
+                }, HTTPStatus.OK
+            except:
+                return {
+                    "success": False,
+                    "message": "Error getting data"
+                }, HTTPStatus.INTERNAL_SERVER_ERROR
+
+update_patient_parser = reqparse.RequestParser()
+update_patient_parser.add_argument('name')
+update_patient_parser.add_argument('patient_number')
+update_patient_parser.add_argument('date_of_birth')
+update_patient_parser.add_argument('age')
+update_patient_parser.add_argument('address')
+
+class UpdatePatientData(Resource):
+    @jwt_required()
+    def put(self, patient_id):
+        if not Patients.find_by_patient_id(patient_id):
             return {
-                "success": True,
-                "message": "Success get all patient data",
+                "success": False,
+                "message": "Patient data is not exist."
+            }, HTTPStatus.NOT_FOUND
+        patient = Patients.find_by_patient_id(patient_id)
+        updated = update_patient_parser.parse_args()
+        if updated['name']:
+            patient.name = updated['name']
+        if updated['patient_number']:
+            patient.patient_number = updated['patient_number']
+        if updated['date_of_birth']:
+            patient.date_of_birth = updated['date_of_birth']
+        if updated['age']:
+            patient.age = updated['age']
+        if updated['address']:
+            patient.address = updated['address']
+        
+        try:
+            patient.save_to_db()
+            current_patient = Patients.find_by_patient_id(patient_id)
+            return {
+                "succes": True,
+                "message": "Success edit patient data",
                 "data": {
-                    "patients": list(map(lambda x: to_dict(x), all_data))
+                    "id" : current_patient.id,
+                    "name" : current_patient.name,
+                    "patient_number": current_patient.patient_number,
+                    "date_of_birth": current_patient.date_of_birth,
+                    "age": current_patient.age,
+                    "address": current_patient.address
                 }
             }, HTTPStatus.OK
         except:
             return {
                 "success": False,
-                "message": "Error getting data"
+                "message": "failed edit patient data"
             }, HTTPStatus.INTERNAL_SERVER_ERROR
+        
+
 

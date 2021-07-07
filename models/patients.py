@@ -33,6 +33,10 @@ class Patients(db.Model):
     @classmethod
     def get_all_patient_data(cls):
         return cls.query.all()
+    
+    @classmethod
+    def find_by_patient_name(cls, id):
+        return cls.query.filter_by
 
 class Detection(db.Model):
     __tablename__ = 'detections'
