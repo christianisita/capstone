@@ -47,6 +47,19 @@ class Detection(db.Model):
     updated_at = db.Column(db.DateTime(), default=datetime.utcnow(), onupdate=datetime.utcnow(), nullable=False)
     patient_id = db.Column(db.String(8), db.ForeignKey('patients.id'), nullable=False)
     file_path = db.Column(db.String(160), nullable=False)
+    detection = db.Column(db.String(160))
+
+    def save_to_db(self):
+        db.session.add(self)
+        db.session.commit()
+
+    @classmethod
+    def find_by_patient_id(cls, patient_id):
+        return cls.query.filter_by(patient_id=patient_id).first()
+
+    @classmethod
+    def find_by_id(cls, id):
+        return cls.query.filter_by(id=id).first()
 
 
 

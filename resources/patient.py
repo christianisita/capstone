@@ -1,11 +1,18 @@
-from flask.wrappers import Response
 from flask_jwt_extended.utils import set_access_cookies
+from sqlalchemy.sql.elements import Null
 from models.patients import Patients, Detection
 from flask_restful import Resource, reqparse
 from flask import request
 import random, string
 from http import HTTPStatus
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, get_jwt_identity)
+from flask import current_app as app
+from werkzeug.utils import secure_filename
+import os
+from tensorflow import keras
+import numpy as np
+
+model = keras.models.load_model("./detection-model/inception_200_100epoch.h5")
 
 def id_generator():
     id = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
@@ -154,6 +161,68 @@ class UpdatePatientData(Resource):
                 "success": False,
                 "message": "failed edit patient data"
             }, HTTPStatus.INTERNAL_SERVER_ERROR
+
+class ImageDetection(Resource):
+    @jwt_required()
+    def post(self, patient_id):
+        UPLOAD_FILE_DESTINATION = app.config['UPLOAD_FOLDER']
+        if not Patients.find_by_patient_id(patient_id):
+            return {
+                "success": False,
+                "message": "Patient doesn't exist!"
+            }, HTTPStatus.NOT_FOUND
+        try:
+            file = request.files['file']
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(UPLOAD_FILE_DESTINATION, filename)
+            file.save(filepath)
+            img_path = filepath
+            print(img_path)
+            img = keras.preprocessing.image.load_img(img_path, target_size=(224, 224))
+            print("img = keras pass")
+            x = keras.preprocessing.image.img_to_array(img)
+            print("x = keras.preprocessing pass")
+            x = np.expand_dims(x, axis=0)
+            print("x = np.expand pas")
+            images = np.vstack([x])
+            print("images pass")
+            prediction = model.predict_generator(images)
+            print("prediction pass")
+            if prediction > 0.5:
+                predicted = 1
+            else:
+                predicted = 0
+
+            uploaded_files = Detection(
+                id = id_generator(),
+                patient_id = patient_id,
+                file_path = filepath,
+                detection = predicted
+            )
+
+            uploaded_files.save_to_db()
+            patient_data = Patients.find_by_patient_id(patient_id)
+            detection_data = Detection.find_by_id(uploaded_files.id)
+            return {
+                "success": True,
+                "message": "success upload file",
+                "data": {
+                    "detection_id": detection_data.id,
+                    "image_path": detection_data.file_path,
+                    "patient_id": patient_data.id,
+                    "patient_name": patient_data.name,
+                    "patient_number": patient_data.patient_number,
+                    "detection": detection_data.detection
+                }
+            }
+        except:
+            return {
+                "success": False,
+                "message": "error upload file"
+            }
+
+
+
         
 
 
