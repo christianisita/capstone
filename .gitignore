@@ -137,3 +137,6 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+/files
+.vscode
+capstone-refactor.code-workspace
