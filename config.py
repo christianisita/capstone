@@ -12,23 +12,6 @@ class Config(object):
     SECRET_KEY = 'rahasia-dong'
     SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
     SQLALCHEMY_TRACK_MODIFICATIONS = os.environ.get("SQLALCHEMY_TRACK_MODIFICATIONS")
-    UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER")
+    UPLOAD_FOLDER = "./files"
     JWT_BLACKLIST_ENABLED = os.environ.get("JWT_BLACKLIST_ENABLED")
-    JWT_BLACKLIST_TOKEN_CHECKS = os.environ.get("JWT_BLACKLIST_TOKEN_CHECKS")
-
-class ProductionConfig(Config):
-    DEBUG = False
-
-class DevelopmentConfig(Config):
-    DEBUG = True
-    DEVELOPMENT = True
-
-class StagingConfig(Config):
-    DEBUG = True
-    DEVELOPMENT = True
-
-env_config = {
-    "development": DevelopmentConfig,
-    "staging": StagingConfig,
-    "production": ProductionConfig
-}
+    JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']

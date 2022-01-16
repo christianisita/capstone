@@ -140,3 +140,4 @@ cython_debug/
 /files
 .vscode
 capstone-refactor.code-workspace
+/migrations

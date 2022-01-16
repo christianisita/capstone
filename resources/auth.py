@@ -104,7 +104,7 @@ class UserLogin(Resource):
             }, HTTPStatus.OK
 
 class RefreshToken(Resource):
-    @jwt_required(refresh=True)
+    @jwt_required
     def post(self):
         identity = get_jwt_identity()
         access_token = create_access_token(identity=identity)
@@ -113,7 +113,7 @@ class RefreshToken(Resource):
         }
 
 class AllUser(Resource):
-    @jwt_required()
+    @jwt_required
     def get(self):
         try: 
             all_user = UserModel.get_all_user_data()

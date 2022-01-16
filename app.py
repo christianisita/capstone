@@ -6,19 +6,24 @@ import resources
 from models import db
 from flask_migrate import Migrate
 
-from config import env_config
+from config import Config
 
 api = Api()
 jwt = JWTManager()
 migrate = Migrate()
+blacklist = set()
 
-def create_app(config_name):
+def create_app():
     app = Flask(__name__)
-    app.config.from_object(env_config[config_name])
+    app.config.from_object(Config)
     api.init_app(app)
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
+    @jwt.token_in_blacklist_loader
+    def check_if_token_in_blacklist(decrypted_token):
+        jti = decrypted_token['jti']
+        return jti in blacklist
     return app
 
 

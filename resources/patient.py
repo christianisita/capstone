@@ -11,8 +11,15 @@ from werkzeug.utils import secure_filename
 import os
 from tensorflow import keras
 import numpy as np
+from tensorflow.keras.models import model_from_json
+from tensorflow.keras.applications.inception_v3 import preprocess_input, decode_predictions
 
-model = keras.models.load_model("./detection-model/inception_200_100epoch.h5")
+#model = keras.models.load_model("./detection-model/preprocessed-01.hdf5")
+json_file = open('./detection-model/model_num.json', 'r')
+loaded_model_json = json_file.read()
+json_file.close()
+model = model_from_json(loaded_model_json)
+model.load_weights("./detection-model/preprocessed-01.hdf5")
 
 def id_generator():
     id = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
@@ -26,7 +33,7 @@ create_patient_parser.add_argument('date_of_birth')
 create_patient_parser.add_argument('address')
 
 class AddPatient(Resource):
-    @jwt_required()
+    @jwt_required
     def post(self):
         patient = create_patient_parser.parse_args()
         if Patients.find_by_patient_number(patient['patient_number']):
@@ -66,7 +73,7 @@ class AddPatient(Resource):
             }, HTTPStatus.INTERNAL_SERVER_ERROR
 
 class PatientData(Resource):
-    @jwt_required()
+    @jwt_required
     def get(self, id=None):
         if id==None:
             try:
@@ -121,7 +128,7 @@ update_patient_parser.add_argument('age')
 update_patient_parser.add_argument('address')
 
 class UpdatePatientData(Resource):
-    @jwt_required()
+    @jwt_required
     def put(self, patient_id):
         if not Patients.find_by_patient_id(patient_id):
             return {
@@ -163,7 +170,7 @@ class UpdatePatientData(Resource):
             }, HTTPStatus.INTERNAL_SERVER_ERROR
 
 class ImageDetection(Resource):
-    @jwt_required()
+    @jwt_required
     def post(self, patient_id):
         UPLOAD_FILE_DESTINATION = app.config['UPLOAD_FOLDER']
         if not Patients.find_by_patient_id(patient_id):
@@ -177,21 +184,13 @@ class ImageDetection(Resource):
             filepath = os.path.join(UPLOAD_FILE_DESTINATION, filename)
             file.save(filepath)
             img_path = filepath
-            print(img_path)
             img = keras.preprocessing.image.load_img(img_path, target_size=(224, 224))
-            print("img = keras pass")
             x = keras.preprocessing.image.img_to_array(img)
-            print("x = keras.preprocessing pass")
             x = np.expand_dims(x, axis=0)
-            print("x = np.expand pas")
-            images = np.vstack([x])
-            print("images pass")
-            prediction = model.predict_generator(images)
-            print("prediction pass")
-            if prediction > 0.5:
-                predicted = 1
-            else:
-                predicted = 0
+            img_preprocessed = preprocess_input(x)
+            prediction = model.predict(img_preprocessed)
+            predicted = np.argmax(prediction, axis=1)[0]
+            predicted = str(predicted)
 
             uploaded_files = Detection(
                 id = id_generator(),
