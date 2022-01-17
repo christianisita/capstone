@@ -13,6 +13,7 @@ from tensorflow import keras
 import numpy as np
 from tensorflow.keras.models import model_from_json
 from tensorflow.keras.applications.inception_v3 import preprocess_input, decode_predictions
+from resources.preprocessing import Preprocessing
 
 #model = keras.models.load_model("./detection-model/preprocessed-01.hdf5")
 json_file = open('./detection-model/model_num.json', 'r')
@@ -183,7 +184,7 @@ class ImageDetection(Resource):
             filename = secure_filename(file.filename)
             filepath = os.path.join(UPLOAD_FILE_DESTINATION, filename)
             file.save(filepath)
-            img_path = filepath
+            img_path = Preprocessing.preprocessing(filepath)
             img = keras.preprocessing.image.load_img(img_path, target_size=(224, 224))
             x = keras.preprocessing.image.img_to_array(img)
             x = np.expand_dims(x, axis=0)
@@ -220,8 +221,61 @@ class ImageDetection(Resource):
                 "message": "error upload file"
             }
 
+class SinglePatientHistory(Resource):
+    @jwt_required
+    def get(self, patient_id):
+        if not Patients.find_by_patient_id(patient_id):
+            return {
+                "success": False,
+                "message": "Patient doesn't exist!"
+            }, HTTPStatus.NOT_FOUND
+        try:
+            patient_data = Patients.find_by_patient_id(patient_id)
+            detection_histories = Detection.single_patient_histories(patient_id)
 
+            def dict_histories(x):
+                return {
+                        "date": x.created_at.__str__(),
+                        "detection" : x.detection,
+                        "file_path" : x.file_path
+                }
+            return {
+                "success": True, 
+                "message": "Success getting detection data!",
+                "data": {
+                    "patient_id": patient_data.id,
+                    "patient_number": patient_data.patient_number,
+                    "patinet_name": patient_data.name,
+                    "age": patient_data.age, 
+                    "address": patient_data.address,
+                    "detection_data": list(map(lambda x: dict_histories(x), detection_histories))
+                }
+            }, HTTPStatus.OK
+        except:
+            return {
+                "success": False,
+                "message": "Error geting data"
+            }, HTTPStatus.INTERNAL_SERVER_ERROR
 
+class AllPatientsHistoriesLatest(Resource):
+    @jwt_required
+    def get(self):
+        
+        all_detection_data = Detection.latest_all()
+        def to_dict(x):
+            return {
+                "patient_id": x.patient_id,
+                "patient_number": x.patient_number,
+                "patient_name": x.name,
+                "patient_age": x.age,
+                "patient_address": x.address,
+                "detection": x.detection,
+                "created_at": x.created_at.__str__(),
+                "file_path": x.file_path
+            }
+        return {
+            "data": list(map(lambda x: to_dict(x),all_detection_data))
+        }
         
 
 

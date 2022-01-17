@@ -39,6 +39,8 @@ api.add_resource(resources.auth.AllUser, '/users')
 api.add_resource(resources.patient.PatientData,'/patients_data/<id>', endpoint='patient')
 api.add_resource(resources.patient.UpdatePatientData, '/patients_data/edit/<patient_id>')
 api.add_resource(resources.patient.ImageDetection, '/upload/<patient_id>')
+api.add_resource(resources.patient.SinglePatientHistory, '/patient_histories/<patient_id>', endpoint='history')
+api.add_resource(resources.patient.AllPatientsHistoriesLatest, '/patient_histories/all', endpoint='histories')
 
 
 
