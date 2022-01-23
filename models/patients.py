@@ -1,7 +1,10 @@
 from datetime import date, datetime
+
+from pytz import timezone
 from models import db
 from sqlalchemy.orm import relationship
 from sqlalchemy import text
+from sqlalchemy.sql import func
 
 class Patients(db.Model):
     __tablename__ = 'patients'
@@ -45,8 +48,8 @@ class Detection(db.Model):
     __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.String(8), unique = True, nullable=False, primary_key=True)
-    created_at = db.Column(db.DateTime(), default=datetime.utcnow(), nullable=False)
-    updated_at = db.Column(db.DateTime(), default=datetime.utcnow(), onupdate=datetime.utcnow(), nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=func.now(), nullable=False)
+    updated_at = db.Column(db.DateTime(timezone=True), default=func.now(), onupdate=func.now(), nullable=False)
     patient_id = db.Column(db.String(8), db.ForeignKey('patients.id'), nullable=False)
     file_path = db.Column(db.String(160), nullable=False)
     detection = db.Column(db.String(160))
@@ -54,6 +57,10 @@ class Detection(db.Model):
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()
+    
+    @classmethod
+    def close_session(self):
+        db.session.close()
 
     @classmethod
     def find_by_patient_id(cls, patient_id):
@@ -92,5 +99,7 @@ class Detection(db.Model):
 
         result = db.session.execute(query)
         return result
+
+
 
 

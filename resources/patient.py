@@ -227,12 +227,14 @@ class ImageDetection(Resource):
                     "detection": detection_data.detection
                 }
             }
-        except Exception as e:
-            raise e
-            # return {
-            #     "success": False,
-            #     "message": "error upload file"
-            # }
+        except:
+            return {
+                "success": False,
+                "message": "error upload file"
+            }
+        finally:
+            Detection.close_session()
+
 
 class SinglePatientHistory(Resource):
     @jwt_required
