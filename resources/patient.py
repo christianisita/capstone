@@ -14,6 +14,7 @@ import numpy as np
 from tensorflow.keras.models import model_from_json
 from tensorflow.keras.applications.inception_v3 import preprocess_input, decode_predictions
 from resources.preprocessing import Preprocessing
+from datetime import datetime
 
 #model = keras.models.load_model("./detection-model/preprocessed-01.hdf5")
 json_file = open('./detection-model/model_num.json', 'r')
@@ -191,7 +192,9 @@ class ImageDetection(Resource):
         try:
             file = request.files['file']
             filename = secure_filename(file.filename)
-            filepath = os.path.join(UPLOAD_FILE_DESTINATION, filename)
+            extension = os.path.splitext(filename)[1]
+            name = patient_id + '-' + str(datetime.now())
+            filepath = os.path.join(UPLOAD_FILE_DESTINATION, str(name+extension))
             file.save(filepath)
             img_path = Preprocessing.preprocessing(filepath)
             img = keras.preprocessing.image.load_img(img_path, target_size=(224, 224))
@@ -224,11 +227,12 @@ class ImageDetection(Resource):
                     "detection": detection_data.detection
                 }
             }
-        except:
-            return {
-                "success": False,
-                "message": "error upload file"
-            }
+        except Exception as e:
+            raise e
+            # return {
+            #     "success": False,
+            #     "message": "error upload file"
+            # }
 
 class SinglePatientHistory(Resource):
     @jwt_required
