@@ -88,7 +88,7 @@ class PatientData(Resource):
                         "id": x.id,
                         "name": x.name,
                         "patient_number": x.patient_number,
-                        "age": x.patient_number,
+                        "age": x.age,
                         "date_of_birth": x.date_of_birth,
                         "gender": x.gender,
                         "address": x.address
@@ -260,7 +260,7 @@ class SinglePatientHistory(Resource):
                 "data": {
                     "patient_id": patient_data.id,
                     "patient_number": patient_data.patient_number,
-                    "patinet_name": patient_data.name,
+                    "patient_name": patient_data.name,
                     "age": patient_data.age, 
                     "address": patient_data.address,
                     "gender": patient_data.gender,

@@ -12,8 +12,8 @@ class Patients(db.Model):
 
 
     id = db.Column(db.String(8), unique = True, nullable=False, primary_key=True)
-    created_at = db.Column(db.DateTime(), default=datetime.utcnow(), nullable=False)
-    updated_at = db.Column(db.DateTime(), default=datetime.utcnow(), onupdate=datetime.utcnow(), nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=func.now(), nullable=False)
+    updated_at = db.Column(db.DateTime(timezone=True), default=func.now(), onupdate=datetime.utcnow(), nullable=False)
     name = db.Column(db.String(120), nullable=False)
     patient_number = db.Column(db.String(20), unique=True, nullable=False)
     age = db.Column(db.String(3))

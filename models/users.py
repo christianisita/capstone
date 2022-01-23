@@ -1,14 +1,17 @@
 from datetime import date, datetime
+
+from pytz import timezone
 from models import db
 from passlib.hash import pbkdf2_sha256 as sha256
+from sqlalchemy.sql import func
 
 class UserModel(db.Model):
     __tablename__ = 'users'
     __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.String(8), unique = True, nullable=False, primary_key=True)
-    created_at = db.Column(db.DateTime(), default=datetime.utcnow(), nullable=False)
-    updated_at = db.Column(db.DateTime(), default=datetime.utcnow(), onupdate=datetime.utcnow(), nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=func.now(), nullable=False)
+    updated_at = db.Column(db.DateTime(timezone=True), default=func.now(), onupdate=func.now(), nullable=False)
     name = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     username = db.Column(db.String(120), unique = True, nullable = False)
@@ -53,8 +56,8 @@ class RevokedTokenModel(db.Model):
     __tablename__ = 'revoked_tokens'
     __table_args__ = {'extend_existing': True}
     id = db.Column(db.String(8), unique = True, nullable=False, primary_key = True)
-    created_at = db.Column(db.DateTime(), default=datetime.utcnow(), nullable=False)
-    updated_at = db.Column(db.DateTime(), default=datetime.utcnow(), onupdate=datetime.utcnow(), nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=func.now(), nullable=False)
+    updated_at = db.Column(db.DateTime(timezone=True), default=func.now(), onupdate=func.now(), nullable=False)
     jti = db.Column(db.String(120))
     
     def add(self):
