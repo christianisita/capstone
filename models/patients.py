@@ -1,6 +1,7 @@
 from datetime import date, datetime
 from models import db
 from sqlalchemy.orm import relationship
+from sqlalchemy import text
 
 class Patients(db.Model):
     __tablename__ = 'patients'
@@ -14,6 +15,7 @@ class Patients(db.Model):
     patient_number = db.Column(db.String(20), unique=True, nullable=False)
     age = db.Column(db.String(3))
     date_of_birth = db.Column(db.String(30))
+    gender = db.Column(db.String(30))
     address = db.Column(db.String(150))
 
     children = relationship("Detection")
@@ -67,18 +69,28 @@ class Detection(db.Model):
 
     @classmethod
     def latest_all(cls):
-        subq = db.session.query(Detection.patient_id, func.max(Detection.created_at).label("created_at")).group_by(Detection.patient_id).subquery('t1')
-        # detection_query = db.session.query(Detection).join(subq, and_ (
-        #     Detection.patient_id == subq.c.patient_id,
-        #     Detection.created_at == subq.c.created_at
-        # )).subquery('t2')
-        # return db.session.query(Patients, detection_query).join(detection_query, and_(
-        #     Patients.id == detection_query.c.patient_id,
-        # ), full=True).all()
-        return db.session.query(Patients.name, Patients.patient_number, Patients.age, Patients.address, Detection.patient_id, Detection.created_at, Detection.detection, Detection.file_path).select_from(Patients).join(Detection, full=True).join(subq, and_(
-            Patients.id == subq.c.patient_id,
-            Detection.patient_id == subq.c.patient_id,
-            Detection.created_at == subq.c.created_at
-        )).all()
+        query = text(
+            """
+            select 
+	            patients.id, 
+	            patients.name,
+	            patients.patient_number,
+	            patients.age,
+	            patients.date_of_birth,
+	            patients.address,
+	            patients.gender,
+	            query.file_path,
+	            query.detection,
+	            query.created_at as detection_date
+            from
+	            patients
+            left join (select detections.*
+                from (select detections.patient_id , max(created_at) as detection_date
+                        from detections
+                        group by detections.patient_id) t, detections where t.patient_id = detections.patient_id and t.detection_date = detections.created_at) query 
+                        on patients.id = query.patient_id""")
+
+        result = db.session.execute(query)
+        return result
 
 

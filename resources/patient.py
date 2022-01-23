@@ -31,6 +31,7 @@ create_patient_parser.add_argument('name', required=True, help="Name cannot be b
 create_patient_parser.add_argument('patient_number', required=True, help="Patient Number cannot be blank!")
 create_patient_parser.add_argument('age', required=True, help="Age cannot be blank")
 create_patient_parser.add_argument('date_of_birth')
+create_patient_parser.add_argument('gender')
 create_patient_parser.add_argument('address')
 
 class AddPatient(Resource):
@@ -48,6 +49,7 @@ class AddPatient(Resource):
             patient_number = patient['patient_number'],
             age = patient['age'],
             date_of_birth = patient['date_of_birth'],
+            gender = patient['gender'],
             address = patient['address']
         )
     
@@ -63,6 +65,7 @@ class AddPatient(Resource):
                     "patient_number": current_patient.patient_number,
                     "age": current_patient.age,
                     "date_of_birth": current_patient.date_of_birth,
+                    "gender": current_patient.gender,
                     "address": current_patient.address
                 }
             }, HTTPStatus.CREATED
@@ -86,6 +89,7 @@ class PatientData(Resource):
                         "patient_number": x.patient_number,
                         "age": x.patient_number,
                         "date_of_birth": x.date_of_birth,
+                        "gender": x.gender,
                         "address": x.address
                     }
                 return {
@@ -112,6 +116,7 @@ class PatientData(Resource):
                         "patient_number": patient.patient_number,
                         "age": patient.age,
                         "date_of_birth": patient.date_of_birth,
+                        "gender": patient.gender,
                         "address": patient.address
                     }
                 }, HTTPStatus.OK
@@ -126,6 +131,7 @@ update_patient_parser.add_argument('name')
 update_patient_parser.add_argument('patient_number')
 update_patient_parser.add_argument('date_of_birth')
 update_patient_parser.add_argument('age')
+update_patient_parser.add_argument('gender')
 update_patient_parser.add_argument('address')
 
 class UpdatePatientData(Resource):
@@ -146,6 +152,8 @@ class UpdatePatientData(Resource):
             patient.date_of_birth = updated['date_of_birth']
         if updated['age']:
             patient.age = updated['age']
+        if updated['gender']:
+            patient.gender = updated['gender']
         if updated['address']:
             patient.address = updated['address']
         
@@ -161,6 +169,7 @@ class UpdatePatientData(Resource):
                     "patient_number": current_patient.patient_number,
                     "date_of_birth": current_patient.date_of_birth,
                     "age": current_patient.age,
+                    "gender": current_patient.gender,
                     "address": current_patient.address
                 }
             }, HTTPStatus.OK
@@ -248,6 +257,7 @@ class SinglePatientHistory(Resource):
                     "patinet_name": patient_data.name,
                     "age": patient_data.age, 
                     "address": patient_data.address,
+                    "gender": patient_data.gender,
                     "detection_data": list(map(lambda x: dict_histories(x), detection_histories))
                 }
             }, HTTPStatus.OK
@@ -264,13 +274,13 @@ class AllPatientsHistoriesLatest(Resource):
         all_detection_data = Detection.latest_all()
         def to_dict(x):
             return {
-                "patient_id": x.patient_id,
+                "patient_id": x.id,
                 "patient_number": x.patient_number,
                 "patient_name": x.name,
                 "patient_age": x.age,
                 "patient_address": x.address,
                 "detection": x.detection,
-                "created_at": x.created_at.__str__(),
+                "detection_date": x.detection_date.__str__(),
                 "file_path": x.file_path
             }
         return {
