@@ -276,22 +276,29 @@ class SinglePatientHistory(Resource):
 class AllPatientsHistoriesLatest(Resource):
     @jwt_required
     def get(self):
-        
-        all_detection_data = Detection.latest_all()
-        def to_dict(x):
+        try:
+            all_detection_data = Detection.latest_all()
+            def to_dict(x):
+                return {
+                    "patient_id": x.id,
+                    "patient_number": x.patient_number,
+                    "patient_name": x.name,
+                    "patient_age": x.age,
+                    "patient_address": x.address,
+                    "detection": x.detection,
+                    "detection_date": x.detection_date.__str__(),
+                    "file_path": x.file_path
+                }
             return {
-                "patient_id": x.id,
-                "patient_number": x.patient_number,
-                "patient_name": x.name,
-                "patient_age": x.age,
-                "patient_address": x.address,
-                "detection": x.detection,
-                "detection_date": x.detection_date.__str__(),
-                "file_path": x.file_path
-            }
-        return {
-            "data": list(map(lambda x: to_dict(x),all_detection_data))
-        }
+                "success": True,
+                "message": "Success getting all patient detection histories",
+                "data": list(map(lambda x: to_dict(x),all_detection_data))
+            }, HTTPStatus.OK
+        except:
+            return {
+                "success": False,
+                "message": "Failed getting all patient detection histories, unexpected database error"
+            }, HTTPStatus.INTERNAL_SERVER_ERROR
         
 
 
