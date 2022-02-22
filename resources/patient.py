@@ -1,6 +1,6 @@
 from flask_jwt_extended.utils import set_access_cookies
 from sqlalchemy.sql.elements import Null
-from models.patients import Patients, Detection
+from models.patients import Patients
 from flask_restful import Resource, reqparse
 from flask import request
 import random, string
@@ -124,8 +124,8 @@ class PatientData(Resource):
             except:
                 return {
                     "success": False,
-                    "message": "Error getting data"
-                }, HTTPStatus.INTERNAL_SERVER_ERROR
+                    "message": "Patient Not Found"
+                }, HTTPStatus.NOT_FOUND
 
 update_patient_parser = reqparse.RequestParser()
 update_patient_parser.add_argument('name')
@@ -232,8 +232,6 @@ class ImageDetection(Resource):
                 "success": False,
                 "message": "error upload file"
             }
-        finally:
-            Detection.close_session()
 
 
 class SinglePatientHistory(Resource):
