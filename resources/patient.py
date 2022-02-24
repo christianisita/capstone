@@ -1,6 +1,6 @@
 from flask_jwt_extended.utils import set_access_cookies
 from sqlalchemy.sql.elements import Null
-from models.patients import Patients
+from models.patients import Patients, Detection
 from flask_restful import Resource, reqparse
 from flask import request
 import random, string
@@ -43,7 +43,7 @@ class AddPatient(Resource):
             return {
                 "success": False,
                 "message": "Patient Number already exist"
-            }, HTTPStatus.OK
+            }, HTTPStatus.FORBIDDEN
         new_patient = Patients(
             id = id_generator(),
             name = patient['name'],
@@ -230,8 +230,8 @@ class ImageDetection(Resource):
         except:
             return {
                 "success": False,
-                "message": "error upload file"
-            }
+                "message": "error upload file, incorrect format data"
+            }, HTTPStatus.FORBIDDEN
 
 
 class SinglePatientHistory(Resource):
